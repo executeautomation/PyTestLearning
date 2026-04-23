@@ -1,6 +1,6 @@
 # PyTest Learning
 
-A hands-on learning repository for **PyTest** — covering basic assertions, fixtures (scopes, hooks), parameterization, and Playwright integration.
+A hands-on learning repository for **PyTest** — covering basic assertions, fixtures (scopes, hooks), parameterization, markers, and Playwright integration.
 
 ## Prerequisites
 
@@ -26,10 +26,14 @@ PyTestLearning/
 │   ├── calc.py               # Simple math helper functions (add, subtract, multiply)
 │   ├── test_calc.py          # Parametrized tests with ids and pytest.param()
 │   └── test_playwright.py    # Nested parametrize (browser × viewport) with skip marks
-└── fixtures_playwright/      # Playwright + PyTest integration
-    ├── conftest.py           # Session-scoped browser & module-scoped page fixtures
-    ├── test_login.py         # Login flow (stub)
-    └── test_employeeCreation.py  # Employee creation flow (stub)
+├── markers/                  # Custom and built-in pytest markers
+│   ├── test_markers.py       # skip, xfail, smoke, regression, slow, skipif
+├── fixtures_playwright/      # Playwright + PyTest integration
+│   ├── conftest.py           # Session-scoped browser & module-scoped page fixtures
+│   ├── test_login.py         # Login flow (stub)
+│   └── test_employeeCreation.py  # Employee creation flow (stub)
+├── conftest.py               # Root: registers custom markers (smoke, regression, slow)
+└── pytest.ini                # Alternative marker registration via INI (commented out)
 ```
 
 ## Getting Started
@@ -51,6 +55,9 @@ pytest fixtures/ -v
 
 # Parameterization (new!)
 pytest parameterize/ -v
+
+# Markers (new!)
+pytest markers/ -v
 
 # Playwright integration
 pytest fixtures_playwright/ -v
@@ -87,7 +94,7 @@ pytest -v -s
 - **Module** — one instance per module file
 - **Session** — one instance across the entire test run
 
-### 3. Parameterization (`parameterize/`) — *new!*
+### 3. Parameterization (`parameterize/`)
 
 | Concept | File |
 |---|---|
@@ -103,7 +110,26 @@ pytest -v -s
 - **pytest.param()**: `pytest.param(value, id="label", marks=...)` — adds labels and conditional marks (e.g., skip)
 - **Nested parametrize**: stacking two decorators creates a cross-product of all parameter combinations
 
-### 4. Playwright Integration (`fixtures_playwright/`)
+### 4. Markers (`markers/`) — *new!*
+
+| Concept | File |
+|---|---|
+| Registering custom markers via `conftest.py` (`pytest_configure`) | Root `conftest.py` |
+| Registering markers via INI file (alternative) | Root `pytest.ini` (commented out) |
+| `@pytest.mark.skip` — skip a test entirely with reason | `test_markers.py` (`test_marker_example`) |
+| `@pytest.mark.xfail` — expected failure (linked to bug) | `test_markers.py` (`test_login_feature`) |
+| Custom markers: `smoke`, `regression`, `slow` | `test_markers.py` (`test_setting_user`, `test_setting_admin_user`) |
+| Combined markers on same test | `test_markers.py` (`test_setting_user`, `test_setting_admin_user`) |
+| `@pytest.mark.skipif` — conditional skip based on env vars | `test_markers.py` (`test_api_key`) |
+
+**Key patterns:**
+- **Registering markers**: either via `conftest.py` (`config.addinivalue_line`) or `pytest.ini` (INI-style)
+- **Built-in markers**: `skip`, `xfail`, `skipif` — control test execution
+- **Custom markers**: define your own (e.g., `smoke`, `regression`, `slow`) and run subsets with `-m "smoke"`
+- **Combined markers**: stack multiple custom markers on one test (e.g., `@pytest.mark.smoke` + `@pytest.mark.regression`)
+- **Running subsets**: `pytest -m "smoke"` runs only smoke tests; `-m "not slow"` excludes slow tests
+
+### 5. Playwright Integration (`fixtures_playwright/`)
 
 Demonstrates chaining fixtures with different scopes:
 - `browser` — session-scoped, sets up once per test run
@@ -124,3 +150,5 @@ Demonstrates chaining fixtures with different scopes:
 6. **`@pytest.mark.parametrize`** runs the same test logic with multiple inputs — reduces duplication dramatically.
 7. **Nested parametrize** creates a cross-product of all parameter combinations (e.g., 3 browsers × 3 viewports = 9 test cases).
 8. **`pytest.param()` with `marks=`** lets you conditionally skip or mark individual parameter combinations.
+9. **Markers** let you label, filter, and selectively run tests — register custom markers in `conftest.py` or `pytest.ini`.
+10. **`skip`, `xfail`, `skipif`** — control test execution: skip entirely, expect failure (for known bugs), or conditionally skip based on environment.
