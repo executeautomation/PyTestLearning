@@ -1,5 +1,7 @@
 # PyTest Learning
 
+> Last Updated: 2024-06-15
+
 A hands-on learning repository for **PyTest** — covering basic assertions, fixtures (scopes, hooks), parameterization, markers, and Playwright integration.
 
 ## Prerequisites
